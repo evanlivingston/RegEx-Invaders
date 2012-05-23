@@ -1,10 +1,11 @@
-var width = 620,
+var width = 1024,
 	height = 500,
 	gLoop,
 	c = document.getElementById('c'), 
 	//    //canvas itself 
 	text = document.getElementById('input'),
 	ctx = c.getContext('2d');
+	text.focus();
 	//      //and two-dimensional graphic context of the
 	//      //canvas, the only one supported by all 
 	//      //browsers for now
@@ -39,18 +40,19 @@ var hud = function(){
 		this.draw = function() {
 			ctx.fillStyle = "green";
 			ctx.font = "bold 16px Courier";
-			ctx.fillText("lives: " + this.lives, 520, 16);
+			ctx.fillText("lives: " + this.lives, 920, 16);
 		}
 }
 
 function enemy() {
 	
-	this.x = (Math.random() * width);
-	this.y = -10;
+	this.x = (Math.random() * width - 200) + 100;
+	this.y = (Math.random() * -280);
 	this.text = "all la a la"; 
 	this.dead = false;
 
 	this.update = function() {
+		this.ends_with_ast = false;
 		if (this.y > height) {
 			this.dead = true;
 			hud.lives = hud.lives - 1;
@@ -58,22 +60,57 @@ function enemy() {
 		if (text.value.length > 0 && text.value.charAt(text.value.length-1) !== '?') {
 			//this.re = RegExp(text.value , 'g');
 			try {
-				this.re = RegExp(text.value, 'g');
+				if ( text.value.charAt(text.value.length-1) == '*') {
+					this.re = RegExp(text.value);
+					this.ends_with_ast = true;
+					console.log('ends with *');
+				}
+				else {
+					this.re = RegExp(text.value, 'g');
+				}
 			} catch(e) {
 				this.re = RegExp('/', 'g');
 			}
 		} else {
-			//this.re = RegExp('/', 'g');
 			this.re = RegExp('/', 'g');
 		}
-		while (this.m = this.re.exec(this.text)) {
-			this.string="";
+		this.string = "";
+		while ((this.m = this.re.exec(this.text)) && this.ends_with_ast == false) {
+		
 			this.index = this.m.index; 
-			this.string = " ".times(this.index).concat(this.m);
-			ctx.fillStyle = "white";
-			ctx.fillText(this.string, this.x, this.y);
+			this.space = " ".times(this.index - this.string.length);
+			this.string = (this.string.concat(this.space.concat(this.m)));
+			//console.log("string = " + this.string + " | match = " + this.m + " | index = " + this.index + " | string.lengh = " + this.string.length);
+			if (this.m == this.text) {
+				this.dead == true;
+				enemies.splice(this, 1);
+				document.getElementById('input').value = "";
+			}
 		}
-		this.y++;
+		if (this.ends_with_ast) {
+			console.log('ends with *');
+			this.test = this.re.exec(this.text);
+			console.log(this.test);
+			this.string = this.test;
+			if (this.test == this.text) {
+				console.log('DEAD');
+				this.dead == true;
+				enemies.splice(this, 1);
+				document.getElementById('input').value = "";
+			}
+		}
+		
+		ctx.fillStyle = "yellow";
+		ctx.fillText(this.string, this.x, this.y);
+	//	if (this.string == this.text) {
+	//		this.dead == true;
+	//		enemies.splice(this, 1);
+	//		document.getElementById('input').value = "";
+	//		if (enemies[this]) {
+	//			enempies[this].pop;
+	//		}
+	//	}
+		this.y = this.y + .5;
 	}
 
 	this.draw = function() {
